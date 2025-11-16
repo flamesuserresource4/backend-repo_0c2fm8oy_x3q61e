@@ -12,9 +12,10 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-# Example schemas (replace with your own):
+# Example schemas (you can keep these or remove later):
 
 class User(BaseModel):
     """
@@ -38,11 +39,39 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Ticketing app schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Event(BaseModel):
+    """
+    Events collection schema
+    Collection name: "event"
+    """
+    title: str
+    description: Optional[str] = None
+    date: datetime
+    venue: str
+    rows: int = Field(..., gt=0, description="Number of seat rows")
+    cols: int = Field(..., gt=0, description="Number of seats per row")
+    price: float = Field(..., ge=0)
+
+class Seat(BaseModel):
+    """
+    Seats collection schema (one document per seat per event)
+    Collection name: "seat"
+    """
+    event_id: str
+    row: str
+    number: int
+    status: str = Field("available", description="available | reserved | booked")
+
+class Booking(BaseModel):
+    """
+    Bookings collection schema
+    Collection name: "booking"
+    """
+    event_id: str
+    seat_ids: List[str]
+    name: str
+    email: str
+    total_amount: float
+    status: str = Field("confirmed")
